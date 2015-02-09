@@ -1,0 +1,87 @@
+
+# Copyright 2014 Georgia Tech Research Corporation (GTRC). All rights reserved.
+
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+
+# You should have received a copy of the GNU General Public License along with
+# this program.  If not, see <http://www.gnu.org/licenses/>.
+
+SHELL = @bash@
+
+PACKAGE_NAME = @PACKAGE_NAME@
+prefix = @prefix@
+datarootdir = @datarootdir@
+datadir = @datadir@
+
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+
+# @var98283@
+
+package_share_dir = $(datadir)/$(PACKAGE_NAME)
+
+gradle = @gradle@
+sed = @sed@
+install = @INSTALL@
+mkdir_p = @MKDIR_P@
+m4 = @m4@
+
+SRC_BIN_FILES = src/bin/xalan
+
+OUT_SHARE_FILES = $(wildcard out/share/*)
+OUT_BIN_FILES = $(SRC_BIN_FILES:src/bin/%=out/bin/%)
+
+INSTALL_SHARE_FILES = $(OUT_SHARE_FILES:out/share/%=$(package_share_dir)/%)
+INSTALL_BIN_FILES = $(OUT_BIN_FILES:out/bin/%=$(bindir)/%)
+INSTALL_FILES = $(INSTALL_SHARE_FILES) $(INSTALL_BIN_FILES)
+
+BUILT_GRADLE_OUT_TOKEN = out/tokens/gradle-out
+
+.PHONY: all install uninstall clean distclean
+
+all: $(OUT_BIN_FILES) $(BUILT_GRADLE_OUT_TOKEN)
+
+$(BUILT_GRADLE_OUT_TOKEN):
+	$(gradle) out
+	$(mkdir_p) $(dir $@)
+	touch $@
+
+out/bin/%: src/bin/% src/macros.m4
+	$(mkdir_p) $(dir $@)
+	$(m4) --prefix-builtins \
+		-DCONFIG_SUBJECT_PATH=$(@:out/bin/%=$(bindir)/%) \
+		-DCONFIG_SUBJECT_NAME=$(notdir $@) \
+		-DCONFIG_PACKAGE_SHARE_DIR=$(package_share_dir) \
+		-DCONFIG_BIN_DIR=$(bindir) \
+		src/macros.m4 $< \
+		> $@
+
+install: $(INSTALL_FILES)
+
+uninstall:
+	$(RM) $(INSTALL_FILES)
+
+$(package_share_dir)/%: out/share/%
+	$(RM) -f $@
+	$(mkdir_p) $(dir $@)
+	$(install) --mode=644 $< $(dir $@)
+
+$(bindir)/%: out/bin/%
+	$(RM) -f $@
+	$(mkdir_p) $(dir $@)
+	$(install) --mode=755 $< $(dir $@)
+
+clean:
+	$(RM) -r out
+
+distclean: clean
+	$(RM) -r autom4te.cache .gradle
+	$(RM) Makefile config.log config.status stow.mk

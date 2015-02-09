@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    runtime 'xalan:xalan:2.7.2'
+
+}
+
+task out(type:Copy) {
+     from configurations.runtime
+     into 'out/share'
+}

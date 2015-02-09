@@ -1,0 +1,11 @@
+*~
+tmp
+\#*\#
+.\#*
+.gradle
+autom4te.cache
+config.log
+config.status
+Makefile
+out
+stow.mk
