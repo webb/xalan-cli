@@ -61,6 +61,13 @@ opt_xsl () {
     xsl_file=$1
 }
 
+#HELP:  --param=$name=value: set an XSLT parameter
+params=()
+opt_param () {
+    (( $# == 2 )) || fail_assert "$FUNCNAME takes 2 args (got $#)"
+    params+=(-PARAM "$1" "$2")
+}
+
 OPTIND=1
 while getopts :hi:o:vx:-: option
 do case "$option" in
@@ -78,6 +85,12 @@ do case "$option" in
                out=* ) opt_out "${OPTARG#*=}";;
                xsl=* ) opt_xsl "${OPTARG#*=}";;
                in | out ) fail "Long option \"$OPTARG\" needs an argument";;
+
+               param=*=* ) # param=name=value...
+                   arg=${OPTARG#*=} # name=value...
+                   opt_param "${arg%%*=}" "${arg#*=}" ;;
+               param | param=* )
+                   fail "Long option \"${OPTARG%%=*}\" expects 2 arguments: name and value";;
                
                * ) fail "Unknown long option \"${OPTARG%%=*}\"";;
             esac;;
@@ -105,6 +118,10 @@ fi
 
 if [[ -n ${xsl_file+is-set} ]]
 then command+=( -XSL "$xsl_file" )
+fi
+
+if (( ${#params[@]} > 0 ))
+then command+=( "${params[@]}" )
 fi
 
 command+=( "$@" )
