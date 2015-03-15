@@ -88,7 +88,7 @@ do case "$option" in
 
                param=*=* ) # param=name=value...
                    arg=${OPTARG#*=} # name=value...
-                   opt_param "${arg%%*=}" "${arg#*=}" ;;
+                   opt_param "${arg%%=*}" "${arg#*=}" ;;
                param | param=* )
                    fail "Long option \"${OPTARG%%=*}\" expects 2 arguments: name and value";;
                
