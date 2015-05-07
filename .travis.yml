@@ -1,0 +1,14 @@
+language: c
+install:
+- sudo apt-get install gradle
+script: ./configure --prefix="$PWD/root" && make
+after_success: make zip dist_name=${TRAVIS_TAG}
+deploy:
+  provider: releases
+  api_key:
+    secure: eb7E4idOfnsKlPG404IuGXH+IAQeLrvgar3x47qI9HX73E7MgPdqlpz3xQkYRmL2sV8QkAi8jrpjmW5wBsbdhOO+p/issFDYO4MEEs+kPJONHftLt0XLd9sZDua3Qs+01oTy1m2+3fsxaAX42Y1An++BUFSmQ4DQVSJRYRn46NM=
+  file: tmp/${TRAVIS_TAG}.zip
+  on:
+    repo: webb/xalan-cli
+    all_branches: true
+    tags: true
