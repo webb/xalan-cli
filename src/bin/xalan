@@ -33,6 +33,13 @@ package_share_dir="$root_dir"/share/xalan-cli
 #HELP:  --help | -h: Print this help
 #HELP:  --verbose, -v: Print additional diagnostics
 
+#HELP:  --java-arg=$arg, -j $arg: Pass arg to JVM
+java_args=()
+opt_java_arg () {
+    (( $# == 1 )) || fail_assert "$FUNCNAME takes 1 arg (got $#)"
+    java_args+=("$1")
+}
+
 #HELP:  --in=$file, -i $file: Take source input from file
 #HELP:      if file is "-", take input from stdin
 unset in_file
@@ -73,6 +80,7 @@ while getopts :hi:o:vx:-: option
 do case "$option" in
        h ) opt_help;;
        i ) opt_in "$OPTARG";;
+       j ) opt_java_arg "$OPTARG";;
        o ) opt_out "$OPTARG";;
        v ) opt_verbose;;
        x ) opt_xsl "$OPTARG";;
@@ -84,7 +92,11 @@ do case "$option" in
                in=* ) opt_in "${OPTARG#*=}";;
                out=* ) opt_out "${OPTARG#*=}";;
                xsl=* ) opt_xsl "${OPTARG#*=}";;
-               in | out ) fail "Long option \"$OPTARG\" needs an argument";;
+
+               java-arg=* ) opt_java_arg "${OPTARG#*=}";;
+
+               in | out | java_arg )
+                   fail "Long option \"$OPTARG\" needs an argument";;
 
                param=*=* ) # param=name=value...
                    arg=${OPTARG#*=} # name=value...
@@ -104,9 +116,15 @@ shift $((OPTIND-1))
 jars=("$package_share_dir"/*.jar)
 (( ${#jars[@]} > 0 )) || fail "No jars found in $package_share_dir"
 classpath=$(tokenize-strings -o : "${jars[@]}")
+# base command
 command=(java
-         -classpath "$classpath"
-         org.apache.xalan.xslt.Process)
+         -classpath "$classpath")
+# additional java args
+for key in ${!java_args[@]}
+do command+=(${java_args[key]})
+done
+# java class 
+command+=(org.apache.xalan.xslt.Process)
 
 if [[ -n ${in_file+is-set} ]]
 then command+=( -IN "$in_file" )
