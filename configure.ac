@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xalan-cli], [0.1], [wr@gatech.edu])
+AC_INIT([Command-line interface for Xalan],[0],[https://github.com/webb/xalan-cli/issues],[xalan-cli],[https://github.com/webb/xalan-cli])
 AC_COPYRIGHT
 AC_CONFIG_SRCDIR
 
@@ -24,6 +24,10 @@ AC_DEFUN([WR_check_prog_options],[AC_PATH_PROGS($1,$2)
 WR_check_prog(bash)
 WR_check_prog(find)
 WR_check_prog(gradle)
+
+AC_PATH_PROGS(realpath,grealpath realpath)
+test "x$[]realpath" = "x" && AC_MSG_ERROR([realpath not found])
+
 WR_check_prog(tar)
 WR_check_prog(zip)
 WR_check_prog_options(m4,gm4 m4)

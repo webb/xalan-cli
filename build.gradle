@@ -5,11 +5,11 @@ repositories {
 }
 
 dependencies {
-    runtime 'xalan:xalan:2.7.2'
-
+    // https://mvnrepository.com/artifact/xalan/xalan
+    runtime group: 'xalan', name: 'xalan', version: '2.7.2'
 }
 
-task out(type:Copy) {
+task save_jars(type:Copy) {
      from configurations.runtime
-     into 'tmp/gradle-out'
+     into "${project.jars_dir}"
 }
